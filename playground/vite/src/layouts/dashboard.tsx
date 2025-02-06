@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { Outlet } from 'react-router';
-import { DashboardLayout } from '@toolpad/core/DashboardLayout';
-import { PageContainer } from '@toolpad/core/PageContainer';
+import { Outlet } from '@tanstack/react-router';
+// import { DashboardLayout } from '@toolpad/core/src/DashboardLayout/DashboardLayout';
+// import { PageContainer } from '@toolpad/core';
+import { DashboardLayout, PageContainer } from '@toolpad/core';
 
 export default function Layout() {
   return (

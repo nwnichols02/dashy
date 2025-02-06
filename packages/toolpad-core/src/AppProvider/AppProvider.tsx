@@ -17,15 +17,16 @@ export interface NavigateOptions {
 }
 
 export interface Navigate {
-  (url: string | URL, options?: NavigateOptions): void;
+  (url: string, options?: NavigateOptions): void;
 }
+
 
 /**
  * Abstract router used by Toolpad components.
  */
 export interface Router {
   pathname: string;
-  searchParams: URLSearchParams;
+  searchParams: URLSearchParams | string;
   navigate: Navigate;
 }
 

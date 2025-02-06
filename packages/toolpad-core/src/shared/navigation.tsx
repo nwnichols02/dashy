@@ -25,9 +25,14 @@ export function isPageItemSelected(
   basePath: string,
   pathname: string,
 ) {
-  return navigationItem.pattern
-    ? pathToRegexp(`${basePath}/${navigationItem.pattern}`).test(pathname)
-    : getPageItemFullPath(basePath, navigationItem) === pathname;
+  // For TanStack Router, we need to handle both pattern and exact matches
+  if (navigationItem.pattern) {
+    return pathToRegexp(`${basePath}/${navigationItem.pattern}`).test(pathname);
+  }
+
+  const fullPath = getPageItemFullPath(basePath, navigationItem);
+  // TanStack router uses exact matches by default
+  return fullPath === pathname || pathname.startsWith(`${fullPath}/`);
 }
 
 export function hasSelectedNavigationChildren(
@@ -67,7 +72,8 @@ function buildItemToPathMap(navigation: Navigation): Map<NavigationPageItem, str
 
   const visit = (item: NavigationItem, base: string) => {
     if (isPageItem(item)) {
-      const path = `${base}${item.segment ? `/${item.segment}` : ''}` || '/';
+      // TanStack router expects paths without trailing slashes
+      const path = (`${base}${item.segment ? `/${item.segment}` : ''}` || '/').replace(/\/+$/, '');
       map.set(item, path);
       if (item.children) {
         for (const child of item.children) {
@@ -113,7 +119,8 @@ function buildItemLookup(navigation: Navigation) {
       map.set(path, item);
       if (item.pattern) {
         const basePath = item.segment ? path.slice(0, -item.segment.length) : path;
-        map.set(pathToRegexp(basePath + item.pattern), item);
+        // TanStack router uses exact matches, so we need to handle wildcards explicitly
+        map.set(pathToRegexp(basePath + item.pattern, undefined, { end: false }), item);
       }
       if (item.children) {
         for (const child of item.children) {
@@ -127,7 +134,9 @@ function buildItemLookup(navigation: Navigation) {
   }
   return map;
 }
+
 const itemLookupMapCache = new WeakMap<Navigation, Map<string | RegExp, NavigationPageItem>>();
+
 function getItemLookup(navigation: Navigation) {
   let map = itemLookupMapCache.get(navigation);
   if (!map) {
@@ -143,12 +152,14 @@ function getItemLookup(navigation: Navigation) {
  */
 export function matchPath(navigation: Navigation, path: string): NavigationPageItem | null {
   const lookup = getItemLookup(navigation);
+  // Remove trailing slashes for consistent matching
+  const normalizedPath = path.replace(/\/+$/, '') || '/';
 
   for (const [key, item] of lookup.entries()) {
-    if (typeof key === 'string' && key === path) {
+    if (typeof key === 'string' && key === normalizedPath) {
       return item;
     }
-    if (key instanceof RegExp && key.test(path)) {
+    if (key instanceof RegExp && key.test(normalizedPath)) {
       return item;
     }
   }

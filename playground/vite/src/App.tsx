@@ -2,33 +2,21 @@ import * as React from 'react';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { Outlet } from 'react-router';
-import { ReactRouterAppProvider } from '@toolpad/core/react-router';
+import { TanStackRouterAppProvider } from '@toolpad/core/tanstack-router';
 import type { Navigation } from '@toolpad/core/AppProvider';
+import { AppProvider } from '@toolpad/core/AppProvider';
+import { BRANDING, NAVIGATION, router } from './main';
 
-const NAVIGATION: Navigation = [
-  {
-    kind: 'header',
-    title: 'Main items',
-  },
-  {
-    title: 'Dashboard',
-    icon: <DashboardIcon />,
-  },
-  {
-    segment: 'orders',
-    title: 'Orders',
-    icon: <ShoppingCartIcon />,
-  },
-];
-
-const BRANDING = {
-  title: 'My Toolpad Core App',
-};
-
-export default function App() {
+export default function App({ children }: { children: React.ReactNode }) {
   return (
-    <ReactRouterAppProvider navigation={NAVIGATION} branding={BRANDING}>
-      <Outlet />
-    </ReactRouterAppProvider>
+    <AppProvider
+      navigation={NAVIGATION}
+      branding={BRANDING}
+      router={router}
+    >
+      {/* <Outlet /> */}
+      {children}
+
+    </AppProvider>
   );
 }
